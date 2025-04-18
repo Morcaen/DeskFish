@@ -20,6 +20,7 @@ public class Joint
     {
         this.bones = new Bone[1];
         this.bones[0] = boneOne;
+        this.terminus = true;
     }
 
     public void LimitRotation()

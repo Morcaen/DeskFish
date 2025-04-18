@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class Skeleton : ScriptableObject
+public class Skeleton
 {
     List<Bone> bones = new List<Bone>(){};
     List<Joint> joints = new List<Joint>(){};
@@ -21,7 +21,7 @@ public class Skeleton : ScriptableObject
         }
 
         this.joints[0].AddBones(this.bones[0]);
-        this.joints[numJoints + 2].AddBones(this.bones[numJoints + 1]);
+        this.joints[numJoints + 1].AddBones(this.bones[numJoints]);
         for (int i = 1; i < numJoints + 1; i++)
         {
             this.joints[i].AddBones(this.bones[i - 1], this.bones[i]);
