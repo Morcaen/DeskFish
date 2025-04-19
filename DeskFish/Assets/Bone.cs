@@ -35,8 +35,12 @@ public class Bone
         }
         float magnitude = (float)Math.Sqrt(sqrMagnitude);
         float error = this.targetLength - magnitude;
-        this.joints[0].ShiftBy(this.description/magnitude*0.5f*error);
-        this.joints[1].ShiftBy(-this.description/magnitude*0.5f*error);
+        if (this.joints[0].fixedJoint) {
+            this.joints[1].ShiftBy(-this.description/magnitude*error, false);
+            return;
+        }
+        this.joints[0].ShiftBy(this.description/magnitude*0.5f*error, false);
+        this.joints[1].ShiftBy(-this.description/magnitude*0.5f*error, false);
     }
 
     bool Within(float value, float allowance, float target)

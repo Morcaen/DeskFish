@@ -5,10 +5,11 @@ using UnityEngine;
 
 public class Joint
 {
-    public Vector3 pos = new Vector3();
+    public Vector3 pos = new Vector3(0, 0, 0);
     Bone[] bones = new Bone[2];
-    float rotFreedom = Convert.ToSingle((4/3)*Math.PI);
+    float rotFreedom = Convert.ToSingle(2*Math.PI);
     bool terminus = false;
+    public bool fixedJoint = false;
 
     public void AddBones(Bone boneOne, Bone boneTwo)
     {
@@ -16,11 +17,12 @@ public class Joint
         this.bones[1] = boneTwo;
     }
 
-    public void AddBones(Bone boneOne)
+    public void AddBones(Bone boneOne, bool fixedJoint)
     {
         this.bones = new Bone[1];
         this.bones[0] = boneOne;
         this.terminus = true;
+        this.fixedJoint = fixedJoint;
     }
 
     public void LimitRotation()
@@ -50,9 +52,12 @@ public class Joint
         this.bones[1].RotateBy(-0.5f*degreeOfError, normalVector);
     }
 
-    public void ShiftBy(Vector3 shift)
+    public void ShiftBy(Vector3 shift, bool forceShift)
     {
-        this.pos += shift;
+        if (this.fixedJoint && !forceShift) {
+            return;
+        }
+        this.pos = this.pos + shift;
         for (int i = 0; i < this.bones.Length; i++) {
             this.bones[i].SetDescription();
         }
