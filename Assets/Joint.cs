@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class Joint
 {
+    public float xPos = 0f;
+    public float yPos = 0f;
+
     private float flexibility = 0f;
-    private float xPos = 0f;
-    private float yPos = 0f;
     private Bone boneOne;
     private Bone boneTwo;
     private bool isTerminus;
