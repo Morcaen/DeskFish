@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Bone
 {
-    private float len;
+    public float len;
 
     public Bone(float len)
     {

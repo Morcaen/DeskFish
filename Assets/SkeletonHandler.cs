@@ -17,6 +17,7 @@ public class SkeletonHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        skeleton.UpdateSkeleton();
         skeleton.UpdateVisualisation();
     }
 }

@@ -18,10 +18,21 @@ public class Skeleton
         joints.Add(new Joint(flexibility, bones[0], bones[0], true, 0, 0)); // Origin joint, "Head"
 
         for (int i = 0; i < numJoints - 1; i++) {
-            joints.Add(new Joint(flexibility, bones[i], bones[i + 1], false, boneLen * (i + 1), 0));
+            joints.Add(new Joint(flexibility, bones[i], bones[i + 1], false, -(boneLen * (i + 1)), 0));
         }
 
-        joints.Add(new Joint(flexibility, bones[numJoints - 1], bones[numJoints - 1], true, boneLen * numJoints, 0)); // Terminal joint, "Tail"
+        joints.Add(new Joint(flexibility, bones[numJoints - 1], bones[numJoints - 1], true, -(boneLen * numJoints), 0)); // Terminal joint, "Tail"
+    }
+
+    public void UpdateSkeleton()
+    {
+        joints[0].pos += new Vector2(0.01f, 0f); // Shifts the origin joint
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 1; j < joints.Count; j++) {
+                joints[j].CorrectPosition(joints[j - 1]);
+            }
+        }
     }
 
     public void InitVisualisation(GameObject jointPrefab)
@@ -36,7 +47,7 @@ public class Skeleton
     public void UpdateVisualisation()
     {
         for (int i = 0; i < joints.Count; i++) {
-            jointObjects[i].transform.SetPositionAndRotation(new Vector3(joints[i].xPos, joints[i].yPos, 0), Quaternion.identity);
+            jointObjects[i].transform.SetPositionAndRotation(joints[i].pos, Quaternion.identity);
             jointObjects[i].SetActive(true);
         }
     }

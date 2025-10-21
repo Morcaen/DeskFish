@@ -1,9 +1,9 @@
 using UnityEngine;
+using System;
 
 public class Joint
 {
-    public float xPos = 0f;
-    public float yPos = 0f;
+    public Vector2 pos = new Vector2(0, 0);
 
     private float flexibility = 0f;
     private Bone boneOne;
@@ -21,7 +21,22 @@ public class Joint
             this.boneTwo = boneTwo;
         }
 
-        this.xPos += xOffset;
-        this.yPos += yOffset;
+        this.pos += new Vector2(xOffset, yOffset);
+    }
+
+    public void CorrectPosition(Joint neighbouringJoint)
+    {
+        float targetSeperation = boneOne.len;
+
+        Vector2 seperationVector = neighbouringJoint.pos - this.pos; // Resultant vector points from this joint to the neighbouring joint
+        float actualSeperation = seperationVector.magnitude;
+
+        if (actualSeperation < 0.95*targetSeperation || actualSeperation > 1.05*targetSeperation) {
+            float error = actualSeperation - targetSeperation; // If the joints are too close, this value will be negative
+            Vector2 direction = seperationVector.normalized;
+
+            this.pos += 0.5f * error * direction;
+            neighbouringJoint.pos += -0.5f * error * direction;
+        }
     }
 }
