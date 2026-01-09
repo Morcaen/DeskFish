@@ -3,21 +3,30 @@ using UnityEngine;
 public class SkeletonHandler : MonoBehaviour
 {
     [SerializeField] private float flexibility;
-    [SerializeField] private float boneLen;
     [SerializeField] private GameObject jointPrefab;
+    [SerializeField] private float gravAcc = -9.8f;
+    [SerializeField] private BoxCollider2D groundCollider;
 
     private Skeleton skeleton;
 
     void Start()
     {
-       skeleton = new Skeleton(7, flexibility, boneLen);
-       skeleton.InitVisualisation(jointPrefab);
+       skeleton = new Skeleton(7, flexibility);
+       skeleton.InitJointVisualisation(jointPrefab);
     }
 
     // Update is called once per frame
     void Update()
     {
-        skeleton.UpdateSkeleton();
-        skeleton.UpdateVisualisation();
+        // Calculate Forces
+        skeleton.ResetForces();
+        skeleton.Gravitate(gravAcc);
+        skeleton.NormalForce(groundCollider);
+
+        // Resolve Forces
+        skeleton.ResloveForces(Time.deltaTime);
+
+        // Update Visualisation
+        skeleton.UpdateJointVisualisation();
     }
 }

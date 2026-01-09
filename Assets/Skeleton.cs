@@ -5,46 +5,74 @@ public class Skeleton
 {
     private List<Bone> bones = new List<Bone> {};
     private List<Joint> joints = new List<Joint> {};
+    private Joint primaryJoint;
 
     private List<GameObject> jointObjects = new List<GameObject> {};
 
     // Store the joints and bones of the skeleton of a given organism
-    public Skeleton(int numJoints, float flexibility, float boneLen)
+    public Skeleton(int numJoints, float flexibility)
     {
-        for (int i = 0; i < numJoints; i++) {
-            bones.Add(new Bone(boneLen));
-        }
+        this.primaryJoint = new Joint(0f, 0f);
+        this.joints.Add(primaryJoint);
+        this.bones.Add(new Bone(primaryJoint, 1));
+        this.bones.Add(new Bone(primaryJoint, -1));
 
-        joints.Add(new Joint(flexibility, bones[0], bones[0], true, 0, 0)); // Origin joint, "Head"
-
-        for (int i = 0; i < numJoints - 1; i++) {
-            joints.Add(new Joint(flexibility, bones[i], bones[i + 1], false, -(boneLen * (i + 1)), 0));
-        }
-
-        joints.Add(new Joint(flexibility, bones[numJoints - 1], bones[numJoints - 1], true, -(boneLen * numJoints), 0)); // Terminal joint, "Tail"
-    }
-
-    public void UpdateSkeleton()
-    {
-        joints[0].pos += new Vector2(0.01f, 0f); // Shifts the origin joint
-
-        for (int i = 0; i < 10; i++) {
-            for (int j = 1; j < joints.Count; j++) {
-                joints[j].CorrectPosition(joints[j - 1]);
+        for (int i = 1; i < numJoints; i++) {
+            int sign = 1;
+            if (i%2 == 0){
+                sign = -1;
             }
+            this.joints.Add(new Joint(flexibility, this.bones[i - 1]));
+            this.bones.Add(new Bone(this.joints[i], sign));
         }
     }
 
-    public void InitVisualisation(GameObject jointPrefab)
+    // CALCULATE FORCES
+    public void ResetForces()
+    {
+        foreach (Joint joint in this.joints) {
+            joint.ResetForce();
+        }
+    }
+
+    public void Gravitate(float gravAcc)
+    {
+        foreach (Joint joint in this.joints) {
+            joint.AddForce(new Vector3(0, joint.mass * gravAcc, 0));
+        }
+    }
+
+    public void NormalForce(BoxCollider2D groundCollider)
+    {
+        foreach (Joint joint in this.joints) {
+            if (!groundCollider.bounds.Contains(joint.pos - new Vector3(0, 0.4f, 0))) {
+                return;
+            }
+            joint.forces[1] = 0f;
+            joint.velocity[1] = 0f;
+        }
+    }
+
+    // RESOLVE FORCES
+    public void ResloveForces(float deltaTime)
+    {
+        foreach (Joint joint in this.joints) {
+            joint.Accelerate(deltaTime);
+            joint.ResolveVelocity(deltaTime);
+        }
+    }
+
+    // VISUALISATION
+    public void InitJointVisualisation(GameObject jointPrefab)
     {
         for (int i = 0; i < joints.Count; i++) {
             this.jointObjects.Add(GameObject.Instantiate(jointPrefab, new Vector3(0, 0, 0), Quaternion.identity));
         }
 
-        this.UpdateVisualisation();
+        this.UpdateJointVisualisation();
     }
 
-    public void UpdateVisualisation()
+    public void UpdateJointVisualisation()
     {
         for (int i = 0; i < joints.Count; i++) {
             jointObjects[i].transform.SetPositionAndRotation(joints[i].pos, Quaternion.identity);

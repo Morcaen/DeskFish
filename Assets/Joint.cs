@@ -3,40 +3,54 @@ using System;
 
 public class Joint
 {
-    public Vector2 pos = new Vector2(0, 0);
-
+    public Vector3 pos = new Vector3(0, 0, 0);
+    public int primacy;
+    public float mass = 1f;
+    
+    public Vector3 forces = new Vector3(0, 0 ,0);
+    public Vector3 velocity = new Vector3(0, 0, 0);
     private float flexibility = 0f;
-    private Bone boneOne;
-    private Bone boneTwo;
-    private bool isTerminus;
 
-    public Joint(float flexibility, Bone boneOne, Bone boneTwo, bool isTerminus, float xOffset, float yOffset)
+    public Joint(float flexibility, Bone baseBone)
     {
         this.flexibility = flexibility; // rotational freedom in radians
-        this.boneOne = boneOne;
-        
-        this.isTerminus = isTerminus;
 
-        if (!isTerminus) {
-            this.boneTwo = boneTwo;
-        }
+        this.primacy = baseBone.primacy + 1;
+        baseBone.joints.Add(this);
 
-        this.pos += new Vector2(xOffset, yOffset);
+        Quaternion rotation = baseBone.armAngles[1];
+        Quaternion boneQuat = rotation * new Quaternion(baseBone.primaryBone[0], baseBone.primaryBone[1], baseBone.primaryBone[2], 0) * Quaternion.Inverse(rotation);
+        Vector3 boneVec = new Vector3(boneQuat[0], boneQuat[1], boneQuat[2]);
+        boneVec.Normalize();
+        boneVec = boneVec * baseBone.armLengths[1];
+        this.pos = boneVec + baseBone.pos;
     }
 
-    public void CorrectPosition(Joint neighbouringJoint)
+    // Overload for primary joint
+    public Joint(float xOffset, float yOffset)
     {
-        float targetSeperation = boneOne.len;
+        this.pos += new Vector3(xOffset, yOffset, 0);
+        this.primacy = 1;
+    }
 
-        Vector2 seperationVector = neighbouringJoint.pos - this.pos; // Resultant vector points from this joint to the neighbouring joint
-        float actualSeperation = seperationVector.magnitude;
+    public void AddForce(Vector3 force)
+    {
+        this.forces += force;
+    }
 
-        if (actualSeperation < 0.95*targetSeperation || actualSeperation > 1.05*targetSeperation) {
-            float error = actualSeperation - targetSeperation; // If the joints are too close, this value will be negative
-            Vector2 direction = seperationVector.normalized;
+    public void ResetForce()
+    {
+        this.forces = new Vector3(0, 0, 0);
+    }
 
-            this.pos += 0.5f * error * direction;
-            neighbouringJoint.pos += -0.5f * error * direction;
-        }
+    public void Accelerate(float deltaTime)
+    {
+        Vector3 acceleration = this.forces / this.mass;
+        this.velocity += acceleration * deltaTime;
+    }
+
+    public void ResolveVelocity(float deltaTime)
+    {
+        this.pos += velocity * deltaTime;
     }
 }
