@@ -11,12 +11,17 @@ public class Joint
     public Vector3 velocity = new Vector3(0, 0, 0);
     private float flexibility = 0f;
 
+    public Bone baseBone;
+    public Bone contBone;
+
     public Joint(float flexibility, Bone baseBone)
     {
         this.flexibility = flexibility; // rotational freedom in radians
 
         this.primacy = baseBone.primacy + 1;
         baseBone.joints.Add(this);
+
+        this.baseBone = baseBone;
 
         Quaternion rotation = baseBone.armAngles[1];
         Quaternion boneQuat = rotation * new Quaternion(baseBone.primaryBone[0], baseBone.primaryBone[1], baseBone.primaryBone[2], 0) * Quaternion.Inverse(rotation);
@@ -31,6 +36,17 @@ public class Joint
     {
         this.pos += new Vector3(xOffset, yOffset, 0);
         this.primacy = 1;
+    }
+
+    public void AssignBone(Bone addBone)
+    {
+        this.contBone = addBone;
+    }
+
+    public void AssignBone(Bone boneOne, Bone boneTwo)
+    {
+        this.baseBone = boneOne;
+        this.contBone = boneTwo;
     }
 
     public void AddForce(Vector3 force)

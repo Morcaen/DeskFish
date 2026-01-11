@@ -20,6 +20,9 @@ public class SkeletonHandler : MonoBehaviour
     {
         // Calculate Forces
         skeleton.ResetForces();
+        if (Input.GetKey(KeyCode.Space)) {
+            skeleton.TestContraction();
+        }
         skeleton.Gravitate(gravAcc);
         skeleton.NormalForce(groundCollider);
 
