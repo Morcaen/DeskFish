@@ -12,6 +12,7 @@ public class Bone
     // Length of "Arms"
 
     public Vector3 pos = new Vector3(0, 0, 0);
+    public Quaternion rotation = new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 4), Mathf.Cos(Mathf.PI / 4));
     public int primacy;
     public List<Joint> joints = new List<Joint>{};
     public Vector3 primaryBone;
@@ -19,6 +20,10 @@ public class Bone
     private bool[] activeArms = new bool[]{true, true, false, false};
     public float[] armLengths = new float[]{0.5f, 0.5f, 0f, 0f};
     public Quaternion[] armAngles = new Quaternion[]{Quaternion.identity, new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 2), Mathf.Cos(Mathf.PI / 2)), Quaternion.identity, Quaternion.identity};
+
+    public float mass = 2f;
+    public Vector3 forces = new Vector3(0, 0, 0);
+    public Vector3 velocity = new Vector3(0, 0, 0);
 
     public Bone(Joint baseJoint)
     {
@@ -44,5 +49,26 @@ public class Bone
         this.activeArms = activeArms;
         this.armLengths = armLens;
         this.armAngles = armAngles;
+    }
+
+    public void AddForce(Vector3 force)
+    {
+        this.forces += force;
+    }
+
+    public void ResetForce()
+    {
+        this.forces = new Vector3(0, 0, 0);
+    }
+
+    public void Accelerate(float deltaTime)
+    {
+        Vector3 acceleration = this.forces / this.mass;
+        this.velocity += acceleration * deltaTime;
+    }
+
+    public void ResolveVelocity(float deltaTime)
+    {
+        this.pos += velocity * deltaTime;
     }
 }

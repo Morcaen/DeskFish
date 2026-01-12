@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class SkeletonHandler : MonoBehaviour
 {
-    [SerializeField] private float flexibility;
     [SerializeField] private GameObject jointPrefab;
+    [SerializeField] private GameObject bonePrefab;
     [SerializeField] private float gravAcc = -9.8f;
     [SerializeField] private BoxCollider2D groundCollider;
 
@@ -11,8 +11,8 @@ public class SkeletonHandler : MonoBehaviour
 
     void Start()
     {
-       skeleton = new Skeleton(7, flexibility);
-       skeleton.InitJointVisualisation(jointPrefab);
+       skeleton = new Skeleton(7, Mathf.PI/8f);
+       skeleton.InitVisualisation(jointPrefab, bonePrefab);
     }
 
     // Update is called once per frame
@@ -24,6 +24,7 @@ public class SkeletonHandler : MonoBehaviour
             skeleton.TestContraction();
         }
         skeleton.Gravitate(gravAcc);
+        skeleton.Friction(groundCollider);
         skeleton.NormalForce(groundCollider);
 
         // Resolve Forces
@@ -31,5 +32,6 @@ public class SkeletonHandler : MonoBehaviour
 
         // Update Visualisation
         skeleton.UpdateJointVisualisation();
+        skeleton.UpdateBoneVisualisation();
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 public class Muscle
 {
-    private float maximumContractualForce = 20; // Newtons
+    private float maximumContractualForce = 15; // Newtons
     private List<Joint> proxJoints;
     private Joint baseJoint;
     private List<Joint> distJoints;
@@ -22,6 +22,10 @@ public class Muscle
 
     public void Contract(float contraction)
     {
+        if (this.baseJoint.GetCurrentJointAngle() < this.baseJoint.minJointAngle) {
+            // This logic is not complete
+            return;
+        }
         contraction = Mathf.Clamp(contraction, 0f, 1f);
         float contractionMagnitude = contraction * maximumContractualForce * this.sign;
 
@@ -31,7 +35,7 @@ public class Muscle
             Vector3 contractionVec = new Vector3(baseToJointVec[1], -baseToJointVec[0], baseToJointVec[2]); // Vector orthogonal to the base to joint vec
             contractionVec.Normalize();
 
-            Vector3 contractionScalar = contractionVec * contractionMagnitude;
+            Vector3 contractionScalar = contractionVec * contractionMagnitude / this.proxJoints.Count;
             this.proxJoints[i].AddForce(contractionScalar);
             this.baseJoint.AddForce(-contractionScalar);
         }
@@ -42,7 +46,7 @@ public class Muscle
             Vector3 contractionVec = new Vector3(-baseToJointVec[1], baseToJointVec[0], baseToJointVec[2]); // Vector orthogonal to the base to joint vec
             contractionVec.Normalize();
 
-            Vector3 contractionScalar = contractionVec * contractionMagnitude;
+            Vector3 contractionScalar = contractionVec * contractionMagnitude / this.proxJoints.Count;
             this.distJoints[i].AddForce(contractionScalar);
             this.baseJoint.AddForce(-contractionScalar);
         }

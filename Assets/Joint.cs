@@ -9,14 +9,14 @@ public class Joint
     
     public Vector3 forces = new Vector3(0, 0 ,0);
     public Vector3 velocity = new Vector3(0, 0, 0);
-    private float flexibility = 0f;
+    public float minJointAngle = Mathf.PI/8f;
 
     public Bone baseBone;
     public Bone contBone;
 
-    public Joint(float flexibility, Bone baseBone)
+    public Joint(float minJointAngle, Bone baseBone)
     {
-        this.flexibility = flexibility; // rotational freedom in radians
+        this.minJointAngle = minJointAngle;
 
         this.primacy = baseBone.primacy + 1;
         baseBone.joints.Add(this);
@@ -68,5 +68,14 @@ public class Joint
     public void ResolveVelocity(float deltaTime)
     {
         this.pos += velocity * deltaTime;
+    }
+
+    public float GetCurrentJointAngle() // This doesn't work because the bones don't move yet
+    {
+        Vector3 jointToProx = this.baseBone.joints[0].pos - this.pos;
+        Vector3 jointToDist = this.contBone.joints[1].pos - this.pos;
+
+        float jointAngle = Vector3.Angle(jointToProx, jointToDist);
+        return jointAngle;
     }
 }
