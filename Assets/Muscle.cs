@@ -4,51 +4,22 @@ using System.Linq;
 
 public class Muscle
 {
-    private float maximumContractualForce = 15; // Newtons
-    private List<Joint> proxJoints;
-    private Joint baseJoint;
-    private List<Joint> distJoints;
+    private float maximumContractualForce = 10; // Newtons
+    private GameObject baseBone;
 
-    private float sign;
-
-    public Muscle(List<Joint> proxJoints, Joint baseJoint, List<Joint> distJoints, float sign)
+    public Muscle(GameObject baseBone)
     {
-        this.proxJoints = proxJoints;
-        this.baseJoint = baseJoint;
-        this.distJoints = distJoints;
-
-        this.sign = sign;
+        this.baseBone = baseBone;
     }
 
     public void Contract(float contraction)
     {
-        if (this.baseJoint.GetCurrentJointAngle() < this.baseJoint.minJointAngle) {
-            // This logic is not complete
-            return;
-        }
-        contraction = Mathf.Clamp(contraction, 0f, 1f);
-        float contractionMagnitude = contraction * maximumContractualForce * this.sign;
+        contraction = Mathf.Clamp(contraction, -1f, 1f);
+        float contractionMagnitude = contraction * maximumContractualForce;
 
-        for (int i = 0; i < this.proxJoints.Count; i++)
-        {
-            Vector3 baseToJointVec = this.proxJoints[i].pos - this.baseJoint.pos;
-            Vector3 contractionVec = new Vector3(baseToJointVec[1], -baseToJointVec[0], baseToJointVec[2]); // Vector orthogonal to the base to joint vec
-            contractionVec.Normalize();
-
-            Vector3 contractionScalar = contractionVec * contractionMagnitude / this.proxJoints.Count;
-            this.proxJoints[i].AddForce(contractionScalar);
-            this.baseJoint.AddForce(-contractionScalar);
-        }
-
-        for (int i = 0; i < this.distJoints.Count; i++)
-        {
-            Vector3 baseToJointVec = this.distJoints[i].pos - this.baseJoint.pos;
-            Vector3 contractionVec = new Vector3(-baseToJointVec[1], baseToJointVec[0], baseToJointVec[2]); // Vector orthogonal to the base to joint vec
-            contractionVec.Normalize();
-
-            Vector3 contractionScalar = contractionVec * contractionMagnitude / this.proxJoints.Count;
-            this.distJoints[i].AddForce(contractionScalar);
-            this.baseJoint.AddForce(-contractionScalar);
-        }
+        Rigidbody baseRB = this.baseBone.GetComponent<Rigidbody>();
+        Rigidbody connRB = this.baseBone.GetComponent<CharacterJoint>().connectedBody;
+        baseRB.AddRelativeTorque(new Vector3(0, 0, 1) * contractionMagnitude);
+        connRB.AddRelativeTorque(new Vector3(0, 0, -1) * contractionMagnitude);
     }
 }
