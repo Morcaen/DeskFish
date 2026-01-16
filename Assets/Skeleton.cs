@@ -8,13 +8,15 @@ public class Skeleton
     private List<GameObject> boneObjects = new List<GameObject> {};
 
     // Store the joints and bones of the skeleton of a given organism
-    public Skeleton(int numBones, GameObject bonePrefab)
+    public Skeleton(int numBones, GameObject bonePrefab, Color color)
     {
         // Make joints and bones
-        this.boneObjects.Add(GameObject.Instantiate(bonePrefab, new Vector3(0, 0, 0), new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 4), Mathf.Cos(Mathf.PI / 4))));
+        this.boneObjects.Add(GameObject.Instantiate(bonePrefab, new Vector3(-18, 0, 0), new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 4), Mathf.Cos(Mathf.PI / 4))));
+        this.boneObjects[0].GetComponent<SpriteRenderer>().color = color;
 
         for (int i = 1; i < numBones; i++) {
-            this.boneObjects.Add(GameObject.Instantiate(bonePrefab, new Vector3(i, 0, 0), new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 4), Mathf.Cos(Mathf.PI / 4))));
+            this.boneObjects.Add(GameObject.Instantiate(bonePrefab, new Vector3(i - 18, 0, 0), new Quaternion(0, 0, Mathf.Sin(Mathf.PI / 4), Mathf.Cos(Mathf.PI / 4))));
+            this.boneObjects[i].GetComponent<SpriteRenderer>().color = color;
             CharacterJoint prevJoint = this.boneObjects[i - 1].GetComponent<CharacterJoint>();
             prevJoint.connectedBody = this.boneObjects[i].GetComponent<Rigidbody>();
         }
@@ -33,9 +35,12 @@ public class Skeleton
         }
     }
 
-    public void TestContraction(int muscle)
+    public void ContractMuscles(List<float> contractions)
     {
-        this.muscles[muscle].Contract(1f);
+        for (int i = 0; i < contractions.Count; i++)
+        {
+            this.muscles[i].Contract(contractions[i]);
+        }
     }
 
     public void zLock()
