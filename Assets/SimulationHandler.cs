@@ -6,19 +6,25 @@ using System.Collections.Generic;
 public class codeTesting : MonoBehaviour
 {
     [SerializeField] GameObject bonePrefab;
+    [SerializeField] BoxCollider groundCollider;
 
-    int runGenerations = -1;
+    int runGenerations = 100;
+    int runFrames = 6000;
+    int frame = 0;
     Population testPop;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        testPop = new Population(100, 3, 1, 0.25f, 7, this.bonePrefab);
+        testPop = new Population(100, 9, 3, 2f, 4, this.bonePrefab);
+        testPop.Mutate();
     }
 
     public void Reset()
     {
-        testPop = new Population(100, 3, 1, 0.25f, 7, this.bonePrefab);
+        this.frame = 0;
+        testPop = new Population(100, 9, 3, 1f, 4, this.bonePrefab);
+        testPop.Mutate();
     }
 
     public void StartSimulation(int desiredGenerations)
@@ -26,22 +32,30 @@ public class codeTesting : MonoBehaviour
         runGenerations = desiredGenerations;
     }
 
-    public void RunSimulation()
+    public void StartNextGeneration()
     {
-        testPop.Mutate();
+        this.frame = 0;
+        this.runFrames = 6000;
         testPop.EvaluatePopulation();
         testPop.Reproduce();
+        this.runGenerations--;
+    }
+
+    public void RunSimulation()
+    {
+        testPop.Run(this.frame, groundCollider);
     }
 
     void Update()
     {
+        this.frame++;
         testPop.zLock();
-        if (this.runGenerations > 0) {
-            runGenerations--;
-            if (this.testPop.maximumFitnesses.Count != 0 && this.testPop.maximumFitnesses[this.testPop.maximumFitnesses.Count - 1] > 99.99f) {
-                runGenerations = 0;
-            } else {
-                this.RunSimulation();
+        if (this.runFrames > 0) {
+            runFrames--;            
+            this.RunSimulation();
+        } else {
+            if (this.runGenerations > 0) {
+                this.StartNextGeneration();
             }
         }
     }

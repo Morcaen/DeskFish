@@ -14,7 +14,7 @@ public class Population
         {"nodeMod", 0.001f},
         {"activationFunctionMod", 0.1f} 
     };
-    float compatibilityThreshold = 1f;
+    float compatibilityThreshold = 0.5f;
     float reproductionAggresivity = 0.1f;
     int targetPopulationSize;
     public int generation = 0;
@@ -28,16 +28,41 @@ public class Population
     public List<Species> extinctCommunity = new List<Species>(){};
     public List<float> maximumFitnesses = new List<float>(){};
     List<float> averageFitnesses = new List<float>(){};
+
+    private GameObject bonePrefab;
+    private int numBones;
     
     public Population(int populationSize, int inputSize, int outputSize, float mutationStrength, int numBones, GameObject bonePrefab)
     {
         this.mutationMods["mutationStrength"] = mutationStrength;
         this.targetPopulationSize = populationSize;
 
+        this.bonePrefab = bonePrefab;
+        this.numBones = numBones;
+
         for (int i = 0; i < populationSize; i++)
         { 
             this.brains.Add(new Controller(inputSize, outputSize, this.connectionIndex, this.nodeIndex));
             this.skeletons.Add(new Skeleton(numBones, bonePrefab, new Color((float) i/populationSize, (float) i/populationSize, (float) i/populationSize, 1)));
+        }
+    }
+
+    public void Run(int frame, BoxCollider groundCollider)
+    {
+        for (int i = 0; i < this.brains.Count; i++)
+        {
+            if (this.skeletons[i].HasFinished()) {
+                if (this.skeletons[i].finisher) {
+                    continue;
+                }
+                this.brains[i].finishFrame = frame;
+                continue;
+            }
+
+            List<float> inputs = this.skeletons[i].GetProprioceptionInputs(groundCollider);
+            this.brains[i].CalculateNetwork(inputs);
+            List<float> outputs = this.brains[i].GetOutputs();
+            this.skeletons[i].ContractMuscles(outputs);
         }
     }
 
@@ -48,13 +73,16 @@ public class Population
             Mut.MutateController(this.brains[i], this.mutationMods, this);
         }
     }
+
     public void EvaluatePopulation()
     {
         for (int i = 0; i < this.brains.Count; i++)
         {
-            this.brains[i].EvaluateFitness();
+            float leadPos = this.skeletons[i].GetLeadPos();
+            this.brains[i].EvaluateFitness(leadPos, this.skeletons[i].finisher);
         }
     }
+
     public void Reproduce()
     {
         // Speciate the population
@@ -76,6 +104,7 @@ public class Population
             }
         }
         this.averageFitnesses.Add(populationAverageAdjustedFitness/this.community.Count);
+        Debug.Log("Average Fitness: " + this.averageFitnesses[this.averageFitnesses.Count - 1]);
 
         if (this.generation != 0) {
             if (this.maximumFitnesses[this.generation] > 99f) {
@@ -161,6 +190,16 @@ public class Population
         }
         
         this.brains = offspring;
+        for (int i = 0; i < this.skeletons.Count; i++)
+        {
+            this.skeletons[i].Delete();
+        }
+        this.skeletons = new List<Skeleton>{};
+        for (int i = 0; i < this.targetPopulationSize; i++)
+        {
+            this.skeletons.Add(new Skeleton(this.numBones, this.bonePrefab, new Color((float) i/this.targetPopulationSize, (float) i/this.targetPopulationSize, (float) i/this.targetPopulationSize, 1)));
+        }
+
         this.generation++;
     }
 

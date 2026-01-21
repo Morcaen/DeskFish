@@ -4,7 +4,7 @@ public class Connection
 {
     public Node inNode;
     public Node outNode;
-    public float weight = Random.Range(1f, 2f);
+    public float weight = Random.Range(0f, 1f);
     public bool connectionEnabled = true;
     public int innovationNumber;
 

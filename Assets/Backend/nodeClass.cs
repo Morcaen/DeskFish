@@ -40,8 +40,10 @@ public class Node
     {
         return (Math.Exp(value) - Math.Exp(-value))/(Math.Exp(value) + Math.Exp(-value)); // https Bames Jartlett
     }
+
     public delegate double ActivationFunction(double value);
     public ActivationFunction activationFunction = Sigmoid;
+    
     public void CalculateActivation()
     {
         if (this.isInputNode) {

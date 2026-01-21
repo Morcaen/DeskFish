@@ -4,8 +4,9 @@ using System.Collections.Generic;
 public class Skeleton
 {
     private List<Muscle> muscles = new List<Muscle> {};
-
     private List<GameObject> boneObjects = new List<GameObject> {};
+
+    public bool finisher = false;
 
     // Store the joints and bones of the skeleton of a given organism
     public Skeleton(int numBones, GameObject bonePrefab, Color color)
@@ -37,7 +38,7 @@ public class Skeleton
 
     public void ContractMuscles(List<float> contractions)
     {
-        for (int i = 0; i < contractions.Count; i++)
+        for (int i = 0; i < contractions.Count - 1; i++)
         {
             this.muscles[i].Contract(contractions[i]);
         }
@@ -63,5 +64,64 @@ public class Skeleton
             returnList.Add(list[i]);
         }
         return returnList;
+    }
+
+    public List<float> GetBasicInputs()
+    {
+        List<float> inputs = new List<float>{};
+        foreach (GameObject bone in this.boneObjects)
+        {
+            inputs.Add(this.Sigmoid(bone.transform.position[0]));
+            inputs.Add(this.Sigmoid(bone.transform.position[1]));
+        }
+        return inputs;
+    }
+
+    public List<float> GetProprioceptionInputs(BoxCollider groundCollider)
+    {
+        List<float> inputs = new List<float>{};
+        foreach (GameObject bone in this.boneObjects)
+        {
+            inputs.Add(this.Sigmoid(2*Mathf.Acos(bone.transform.rotation[0])));
+            if (groundCollider.bounds.Contains(bone.transform.position)) {
+                inputs.Add(1f);
+            } else {
+                inputs.Add(0f);
+            }
+        }
+        return inputs;
+    }
+
+    public float GetLeadPos()
+    {
+        float leadPos = this.boneObjects[this.boneObjects.Count - 1].transform.position[0];
+        return leadPos;
+    }
+
+    public bool HasFinished()
+    {
+        if (this.finisher) {
+            return true;
+        }
+
+        if (this.boneObjects[0].transform.position[0] > 18) {
+            this.finisher = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void Delete()
+    {
+        foreach (GameObject bone in this.boneObjects)
+        {
+            GameObject.Destroy(bone);
+        }
+    }
+
+    public float Sigmoid(float value) // 'Squeezes' x values so they lie between -1 and 1
+    {
+        return 1/(1+Mathf.Exp(-value)); // https://en.wikipedia.org/wiki/Sigmoid_function 
     }
 }

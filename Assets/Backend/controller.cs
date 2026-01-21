@@ -9,6 +9,8 @@ public class Controller
     public Dictionary<string, int> connectionInnovationIndex;
     public Dictionary<string, int> nodeInnovationIndex;
 
+    public int finishFrame;
+
     // GENOTYPE
     public List<Layer> layers = new List<Layer>{};
     public List<Connection> connections = new List<Connection>{};
@@ -85,7 +87,7 @@ public class Controller
         }
     }
     
-    public void CalculateNetwork(List<double> inputs)
+    public void CalculateNetwork(List<float> inputs)
     {
         if (inputs.Count != (this.layers[0].nodes.Count - 1)) {
             Debug.Log($"Size of input ({inputs.Count}) != size of input layer ({this.layers[0].nodes.Count})");
@@ -97,6 +99,7 @@ public class Controller
         }
         this.CalculateNetwork();
     }
+
     public void CalculateNetwork()
     {
         for (int i = 0; i < this.layers.Count; i++)
@@ -112,8 +115,28 @@ public class Controller
             }
         }
     }
-    public void EvaluateFitness()
+
+    public List<float> GetOutputs()
+    {
+        Layer outputLayer = this.layers[this.layers.Count - 1];
+        List<float> outputs = new List<float>{};
+        foreach (Node node in outputLayer.nodes)
+        {
+            outputs.Add((float) node.activationValue);
+        }
+
+        return outputs;
+    }
+
+    public void EvaluateFitness(float leadPos, bool didFinish)
     {
         // Write a fitness evaluation
+        if (didFinish) {
+            this.fitness = 6000 / this.finishFrame * 50 + 10;
+            return;
+        }
+        float distance = leadPos + 18f;
+        this.fitness = distance / 36 * 75;
+        return;
     }
 }
